@@ -34,7 +34,6 @@ import XMonad.StackSet hiding (modify)
 import Prelude
 import Control.Exception.Extensible (fromException, try, bracket, throw, finally, SomeException(..))
 import qualified Control.Exception.Extensible as E
-import Control.Applicative
 import Control.Monad.State
 import Control.Monad.Reader
 import Data.Default

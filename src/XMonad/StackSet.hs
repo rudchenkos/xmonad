@@ -35,7 +35,7 @@ module XMonad.StackSet (
         -- *  Operations on the current stack
         -- $stackOperations
         peek, index, integrate, integrate', differentiate,
-        focusUp, focusDown, focusUp', focusDown', focusMaster, focusWindow,
+        focusUp, focusDown, focusUp', focusDown', focusMaster, focusWindow, alignToTop,
         tagMember, renameTag, ensureTags, member, findTag, mapWorkspace, mapLayout,
         -- * Modifying the stackset
         -- $modifyStackset
@@ -341,12 +341,14 @@ index = with [] integrate
 -- if we reach the end. Again the wrapping model should 'cycle' on
 -- the current stack.
 --
-focusUp, focusDown, swapUp, swapDown :: StackSet i l a s sd -> StackSet i l a s sd
+focusUp, focusDown, swapUp, swapDown, alignToTop :: StackSet i l a s sd -> StackSet i l a s sd
 focusUp   = modify' focusUp'
 focusDown = modify' focusDown'
 
 swapUp    = modify' swapUp'
 swapDown  = modify' (reverseStack . swapUp' . reverseStack)
+
+alignToTop = modify' alignToTop'
 
 -- | Variants of 'focusUp' and 'focusDown' that work on a
 -- 'Stack' rather than an entire 'StackSet'.
@@ -358,6 +360,9 @@ focusDown'                   = reverseStack . focusUp' . reverseStack
 swapUp' :: Stack a -> Stack a
 swapUp'  (Stack t (l:ls) rs) = Stack t ls (l:rs)
 swapUp'  (Stack t []     rs) = Stack t (reverse rs) []
+
+alignToTop' :: Stack a -> Stack a
+alignToTop' (Stack t ls rs) = Stack t [] (ls ++ rs)
 
 -- | reverse a stack: up becomes down and down becomes up.
 reverseStack :: Stack a -> Stack a

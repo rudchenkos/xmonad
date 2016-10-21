@@ -288,6 +288,13 @@ handle (KeyEvent {ev_event_type = t, ev_state = m, ev_keycode = code})
         ks <- asks keyActions
         userCodeDef () $ whenJust (M.lookup (mClean, s) ks) id
 
+handle (KeyEvent {ev_event_type = t, ev_keycode = code})
+    | t == keyRelease = withDisplay $ \dpy -> do
+        s  <- io $ keycodeToKeysym dpy code 0
+        trace $ (show s) ++ "(keycode " ++ (show code) ++ ") was released" -- TODO Remove
+        -- FAIL: reorders windows -- when (s == xK_Alt_L) $ windows W.alignToTop
+        return ()
+
 -- manage a new window
 handle (MapRequestEvent    {ev_window = w}) = withDisplay $ \dpy -> do
     wa <- io $ getWindowAttributes dpy w -- ignore override windows
@@ -454,6 +461,8 @@ grabKeys = do
     syms <- forM allCodes $ \code -> io (keycodeToKeysym dpy code 0)
     let keysymMap = M.fromListWith (++) (zip syms [[code] | code <- allCodes])
         keysymToKeycodes sym = M.findWithDefault [] sym keysymMap
+
+    mapM_ (\kc -> grab kc 0) $ keysymToKeycodes xK_Alt_L -- TODO Grab modifiers in a cleaner way
     forM_ (M.keys ks) $ \(mask,sym) ->
          forM_ (keysymToKeycodes sym) $ \kc ->
               mapM_ (grab kc . (mask .|.)) =<< extraModifiers
